@@ -1,31 +1,15 @@
 
 var samples = "./samples.json";
 
-
 var dataSet = d3.json(samples).then(function(data) {
-
-    //console.log(data);
-    //var names = data.names;
-    //console.log(names)
 
     //var metadata = data.metadata
     //var names3 = metadata.map(entry => entry.id);
     //console.log(names3);
-
-    // var subjectID = "950";
-    // var samples = data.samples;
-
-
-    
-    // var otuID = results[0]["otu_ids"]
-    // var sampleValues = results[0]["sample_values"];
-    // console.log(otuID)
-    // console.log(sampleValues)
 })    
 
 // Select the "select" tag in HTML
 var idSelect = d3.select("#selDataset");
-
 
 
 dropDown()
@@ -59,20 +43,30 @@ function optionChanged() {
         var samples = data.samples;
         var results = samples.filter(subject => subject.id === input);
         
-        // Data for bar chart
+        // Pull raw data for charts
         var sampleValues = results[0]["sample_values"];
-        sampleValues = sampleValues.slice(0, 10)
-
         var otuID = results[0]["otu_ids"];
-        otuID = otuID.map(id => `OTU ${id}`);
-        buildBarchart(sampleValues, otuID)
+        var otuLabels = results[0]["otu_labels"];
+        
+        // Data for bar chart
+        var topSampleVal = sampleValues.slice(0, 10);
+        var otuIdsLabel = otuID.map(id => `OTU ${id}`);
+        buildBarchart(topSampleVal, otuIdsLabel);
+
+        // Data for bubble chart
+        buildBubblechart(otuID, sampleValues, otuLabels)
+
+        var metadata = data.metadata
+        //var test = "950"
+        var demoInfo = metadata.filter(id => id.id.toString() === input)
+        console.log(demoInfo); 
     })
 }
 
-function buildBarchart(sampleValues, otuID) {
-    var trace1 = [{
-        x: sampleValues,
-        y: otuID,
+function buildBarchart(topSampleVal, otuIdsLabel) {
+    var trace1 = {
+        x: topSampleVal,
+        y: otuIdsLabel,
         type: "bar",
         orientation: "h",
         transforms: [{
@@ -80,24 +74,22 @@ function buildBarchart(sampleValues, otuID) {
             target: "x",
             order: "ascending"
         }]
-    }];
-    Plotly.newPlot("bar", trace1);
+    };
+    var data = [trace1]
+    Plotly.newPlot("bar", data);
 }
 
-// function buildBarchart(change) {
-//     d3.json(samples).then(function(data) {
+function buildBubblechart(otuID, sampleValues, otuLabels) {
+    var trace1 = {
+        x: otuID,
+        y: sampleValues,
+        mode: "markers",
+        marker: {
+            size: sampleValues,
+            color: ['rgb(93, 164, 214)', 'rgb(255, 144, 14)',  'rgb(44, 160, 101)', 'rgb(255, 65, 54)'],
+        }
+    }
+    var data = [trace1]
+    Plotly.newPlot("bubble", data);
+}
 
-//         //Extract samples data from json
-//         var samples = data.samples;
-
-//         // Filter by subject or individual
-//         var results = samples.filter(subject => subject.id === input);
-
-//         // Pull data for chart
-//         var sampleValues = results[0]["sample_values"];
-//         var otuID = results[0]["otu_ids"];
-//         console.log(sampleValues);
-//         console.log(otuID);
-
-//     })
-// }
