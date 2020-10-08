@@ -57,9 +57,10 @@ function optionChanged() {
         buildBubblechart(otuID, sampleValues, otuLabels)
 
         var metadata = data.metadata
-        //var test = "950"
         var demoInfo = metadata.filter(id => id.id.toString() === input)
-        console.log(demoInfo); 
+        demoInfo = demoInfo[0]
+        //console.log(demoInfo)
+        demographicInfo(demoInfo); 
     })
 }
 
@@ -93,3 +94,12 @@ function buildBubblechart(otuID, sampleValues, otuLabels) {
     Plotly.newPlot("bubble", data);
 }
 
+function demographicInfo(demoInfo) {
+    // Select panel body
+    var panelBody = d3.select(".panel-body")
+    
+    // Obtain key value pairs and append to panel tag
+    Object.entries(demoInfo).forEach(([key,value]) => {
+        panelBody.append("div").text(`${key}: ${value}`, "strong");
+    })
+}
