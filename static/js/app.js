@@ -1,47 +1,17 @@
-
+// Save dataset file location in variable
 var samples = "./samples.json";
 
-var dataSet = d3.json(samples).then(function(data) {
-
-    //var metadata = data.metadata
-    //var names3 = metadata.map(entry => entry.id);
-    //console.log(names3);
-})    
-
-// Select the "select" tag in HTML
+// HTML selectors
 var idSelect = d3.select("#selDataset");
 
-
-dropDown()
-function dropDown() {
-    d3.json(samples).then(function(data) {
-        // Save subjects IDs into a new variable
-        var subjects = data.names;
-
-        // Loop subjects array to create a drop down list 
-        subjects.forEach(function(subject) {
-            var option = idSelect.append("option");
-            option
-                .attr("value", subject)
-                .text(subject)
-        })
-    })
-}
-
-// Event handler
-var change = idSelect.on("change", optionChanged);
-
-function optionChanged() {
-    // Select the input value
-    var input = idSelect.property("value")
-    //console.log(input)
-
+// Build function to extract and filter data necessary to create Dashboard
+function inputDashboard(sampleId) {
     d3.json(samples).then(function(data) {
         
         // I. Extract information for bar chart
         //Extract samples data from json and filter subject ID
         var samples = data.samples;
-        var results = samples.filter(subject => subject.id === input);
+        var results = samples.filter(subject => subject.id === sampleId);
         
         // Pull raw data for charts
         var sampleValues = results[0]["sample_values"];
@@ -51,23 +21,33 @@ function optionChanged() {
         // Data for bar chart
         var topSampleVal = sampleValues.slice(0, 10);
         var otuIdsLabel = otuID.map(id => `OTU ${id}`);
-        buildBarchart(topSampleVal, otuIdsLabel);
+        buildBarchart(topSampleVal, otuIdsLabel, otuLabels);
 
         // Data for bubble chart
         buildBubblechart(otuID, sampleValues, otuLabels)
 
         var metadata = data.metadata
-        var demoInfo = metadata.filter(id => id.id.toString() === input)
+        var demoInfo = metadata.filter(id => id.id.toString() === sampleId)
         demoInfo = demoInfo[0]
         //console.log(demoInfo)
         demographicInfo(demoInfo); 
     })
 }
 
-function buildBarchart(topSampleVal, otuIdsLabel) {
+// Event handler
+var change = idSelect.on("change", optionChanged);
+
+// Call inputDashboard and render grapsh when a new input is passed
+function optionChanged() {
+    var input = idSelect.property("value")
+    inputDashboard(input)
+}
+
+function buildBarchart(topSampleVal, otuIdsLabel, otuLabels) {
     var trace1 = {
         x: topSampleVal,
         y: otuIdsLabel,
+        text: otuLabels,
         type: "bar",
         orientation: "h",
         transforms: [{
@@ -76,14 +56,20 @@ function buildBarchart(topSampleVal, otuIdsLabel) {
             order: "ascending"
         }]
     };
+    var layout = {
+        title: "Top 10 Bacteria",
+        margin: { t: 35, l: 100 }
+    };
+  
     var data = [trace1]
-    Plotly.newPlot("bar", data);
+    Plotly.newPlot("bar", data, layout);
 }
 
 function buildBubblechart(otuID, sampleValues, otuLabels) {
     var trace1 = {
         x: otuID,
         y: sampleValues,
+        text: otuLabels,
         mode: "markers",
         marker: {
             size: sampleValues,
@@ -91,8 +77,16 @@ function buildBubblechart(otuID, sampleValues, otuLabels) {
             colorscale: "YlGnBuc"
         }
     }
+    var layout = {
+        title: "Bacteria Found in Sample",
+        margin: { t: 10 },
+        hovermode: "closest",
+        xaxis: { title: "OTU ID" },
+        margin: { t: 35}
+      };
+  
     var data = [trace1]
-    Plotly.newPlot("bubble", data);
+    Plotly.newPlot("bubble", data, layout);
 }
 
 function demographicInfo(demoInfo) {
@@ -108,13 +102,20 @@ function demographicInfo(demoInfo) {
     })
 }
 
-
-// Create init function
-// function init() {
-//     // Reference dropdown
-//     // list of sample names
-//     //build charts
-// };
-
-// init();
-    
+// Create and call init() function to set up initial dashboard
+function init() {
+    d3.json(samples).then(function(data) {
+        var subjects = data.names;
+        console.log(subjects)
+        
+        subjects.forEach(subject => {
+            var option = idSelect.append("option");
+            option
+                .attr("value", subject)
+                .text(subject)
+        })
+        var initSubject = subjects[0];
+        inputDashboard(initSubject)
+    })    
+};
+init();
