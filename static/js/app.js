@@ -34,7 +34,7 @@ var change = idSelect.on("change", optionChanged);
 function optionChanged() {
     // Select the input value
     var input = idSelect.property("value")
-    console.log(input)
+    //console.log(input)
 
     d3.json(samples).then(function(data) {
         
@@ -87,7 +87,8 @@ function buildBubblechart(otuID, sampleValues, otuLabels) {
         mode: "markers",
         marker: {
             size: sampleValues,
-            color: ['rgb(93, 164, 214)', 'rgb(255, 144, 14)',  'rgb(44, 160, 101)', 'rgb(255, 65, 54)'],
+            color: otuID,
+            colorscale: "YlGnBuc"
         }
     }
     var data = [trace1]
@@ -97,9 +98,23 @@ function buildBubblechart(otuID, sampleValues, otuLabels) {
 function demographicInfo(demoInfo) {
     // Select panel body
     var panelBody = d3.select(".panel-body")
+
+    // Clean previous data
+    panelBody.selectAll("div").remove();
     
     // Obtain key value pairs and append to panel tag
     Object.entries(demoInfo).forEach(([key,value]) => {
         panelBody.append("div").text(`${key}: ${value}`, "strong");
     })
 }
+
+
+// Create init function
+// function init() {
+//     // Reference dropdown
+//     // list of sample names
+//     //build charts
+// };
+
+// init();
+    
