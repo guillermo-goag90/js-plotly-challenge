@@ -1,7 +1,7 @@
 # js-plotly-challenge
 
 ## Languages & packages
-JavaScript, HTML, CSS
+JavaScript, HTML
 D3.js, Plot.ly
 
 ## Description
